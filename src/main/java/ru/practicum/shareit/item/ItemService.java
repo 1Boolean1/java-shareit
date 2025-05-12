@@ -40,12 +40,12 @@ public class ItemService {
                 .collect(Collectors.toList());
     }
 
-    public ItemDto createItem(@RequestBody Item item, long userId) {
+    public ItemDto createItem(@RequestBody ItemDto itemDto, long userId) {
         if (!isExistsUser(userId)) {
             throw new NotFoundException("User not found");
         }
-        item.setOwnerId(userId);
-        return ItemMapper.mapToItemDto(repository.addItem(item));
+        itemDto.setOwnerId(userId);
+        return ItemMapper.mapToItemDto(repository.addItem(ItemMapper.mapToItem(itemDto)));
     }
 
     public ItemDto updateItem(long itemId, long userId, ItemUpdateDto itemUpdateDto) {

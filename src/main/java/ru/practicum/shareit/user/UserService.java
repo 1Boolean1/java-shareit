@@ -5,7 +5,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import ru.practicum.shareit.exceptions.BadRequestException;
-import ru.practicum.shareit.exceptions.FieldContainsException;
 import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserUpdateDto;
@@ -43,15 +42,6 @@ public class UserService {
         if (userUpdateDto.getEmail() != null && !userUpdateDto.getEmail().isBlank()) {
             final String newEmail = userUpdateDto.getEmail();
             if (!existingUser.getEmail().equals(newEmail)) {
-                repository.getByEmail(newEmail).ifPresent(u -> {
-                    if (u.getId() != userId) {
-                        try {
-                            throw new FieldContainsException("Email " + newEmail + " is already in use.");
-                        } catch (BadRequestException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                });
                 existingUser.setEmail(newEmail);
                 needsUpdate = true;
             }
@@ -77,11 +67,11 @@ public class UserService {
                 .orElseThrow(() -> new NoSuchElementException("User not found")));
     }
 
-    public UserDto createUser(@RequestBody User user) {
-        if (user.getName() == null) {
-            user.setName(user.getEmail());
+    public UserDto createUser(@RequestBody UserDto userDto) {
+        if (userDto.getName() == null) {
+            userDto.setName(userDto.getEmail());
         }
-        return UserMapper.mapToUserDto(repository.insert(user));
+        return UserMapper.mapToUserDto(repository.insert(UserMapper.mapToUser(userDto)));
     }
 
     public void deleteUser(@PathVariable long id) {

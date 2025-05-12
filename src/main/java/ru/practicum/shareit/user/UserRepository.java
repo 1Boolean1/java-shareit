@@ -1,58 +1,57 @@
 package ru.practicum.shareit.user;
 
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
-import ru.practicum.shareit.base.BaseRepository;
+import ru.practicum.shareit.exceptions.BadRequestException;
+import ru.practicum.shareit.exceptions.FieldContainsException;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
-public class UserRepository extends BaseRepository<User> {
-    public UserRepository(JdbcTemplate jdbc, UserRowMapper mapper) {
-        super(jdbc, mapper);
+public class UserRepository {
+    private final ArrayList<User> users;
+
+    public UserRepository(ArrayList<User> users) {
+        this.users = users;
+
     }
 
-    private static final String FIND_ALL_QUERY = "SELECT * FROM users";
-    private static final String FIND_BY_ID_QUERY = "SELECT * FROM users WHERE id = ?";
-    private static final String INSERT_QUERY = "INSERT INTO users(name, email) VALUES (?, ?)";
-    private static final String UPDATE_QUERY = "UPDATE users SET name = ?, email = ? WHERE id = ?";
-    private static final String DELETE_QUERY = "DELETE FROM users WHERE id = ?";
-    private static final String FIND_BY_EMAIL_QUERY = "SELECT * FROM users WHERE email = ?";
-
     public List<User> getAll() {
-        return findMany(FIND_ALL_QUERY);
+        return users;
     }
 
     public Optional<User> getById(long id) {
-        return findOne(FIND_BY_ID_QUERY, id);
-    }
-
-    public Optional<User> getByEmail(String email) {
-        return findOne(FIND_BY_EMAIL_QUERY, email);
+        return users.stream().filter(user -> user.getId() == id).findFirst();
     }
 
     public User insert(User user) {
-        long id = insert(INSERT_QUERY,
-                user.getName(),
-                user.getEmail());
-        user.setId(id);
+        user.setId(users.size() + 1);
+        checkEmail(user.getEmail());
+        users.add(user);
         return user;
     }
 
     public User update(User user) {
-        int rowsAffected = jdbc.update(UPDATE_QUERY,
-                user.getName(),
-                user.getEmail(),
-                user.getId());
-        if (rowsAffected == 0) {
-            throw new RuntimeException("User with id " + user.getId() + " not found for update.");
-        }
+        delete(user.getId());
+        checkEmail(user.getEmail());
+        users.add(user);
+        users.set(users.indexOf(user), user);
         return getById(user.getId()).orElseThrow(() ->
                 new RuntimeException("User disappeared after update, id: " + user.getId()));
     }
 
     public void delete(long id) {
-        delete(DELETE_QUERY, id);
+        users.removeIf(user -> user.getId() == id);
+    }
+
+    private void checkEmail(String email) {
+        if (email.isBlank()) {
+            throw new BadRequestException("Email is empty");
+        } else if (users.stream().anyMatch(user1 -> user1.getEmail().equals(email))) {
+            throw new FieldContainsException("Email is already in use");
+        } else if (!email.contains("@") || !email.contains(".")) {
+            throw new BadRequestException("Email contains invalid characters");
+        }
     }
 }
