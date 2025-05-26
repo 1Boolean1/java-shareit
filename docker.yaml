@@ -1,0 +1,49 @@
+name: Java CI with Maven
+
+on: [ push, pull_request ]
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16.1
+        env:
+          POSTGRES_DB: shareit
+          POSTGRES_USER: dbuser
+          POSTGRES_PASSWORD: "12345"
+        ports:
+          - "5432:5432"
+        options: >-
+          --health-cmd "pg_isready -U dbuser -d shareit -h localhost" 
+          --health-interval 15s
+          --health-timeout 10s
+          --health-retries 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Run tests with Maven
+        env:
+          SPRING_PROFILES_ACTIVE: test
+
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/shareit
+          SPRING_DATASOURCE_USERNAME: dbuser
+          SPRING_DATASOURCE_PASSWORD: "12345"
+          SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+
+          SPRING_JPA_HIBERNATE_DDL_AUTO: none
+          SPRING_JPA_SHOW_SQL: "true"
+          SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL: "true"
+          SPRING_JPA_PROPERTIES_HIBERNATE_JDBC_TIME_ZONE: UTC
+
+          SPRING_SQL_INIT_MODE: always
+
+        run: mvn -B test
