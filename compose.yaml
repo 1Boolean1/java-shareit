@@ -1,0 +1,38 @@
+name: Java CI with Maven
+
+on: [push, pull_request]
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16.1
+        env:
+          POSTGRES_DB: shareit
+          POSTGRES_USER: dbuser
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_TEST_PASSWORD }}
+        ports:
+          - "5432:5432"
+        options: >-
+          --health-cmd "pg_isready -U dbuser -d shareit -h localhost" # Команда для проверки готовности
+          --health-interval 15s  # Интервал между проверками (увеличено)
+          --health-timeout 10s   # Таймаут для одной проверки (увеличено)
+          --health-retries 10    # Количество попыток проверки (увеличено)
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Run tests with Maven
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/shareit
+          SPRING_DATASOURCE_USERNAME: dbuser
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.POSTGRES_TEST_PASSWORD }}
+        run: mvn -B test
