@@ -5,12 +5,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import ru.practicum.shareit.exceptions.BadRequestException;
+import ru.practicum.shareit.exceptions.FieldContainsException;
 import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserUpdateDto;
 
 import java.util.Collection;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -40,6 +42,9 @@ public class UserService {
         }
 
         if (userUpdateDto.getEmail() != null && !userUpdateDto.getEmail().isBlank()) {
+            if (repository.findAll().stream().anyMatch(user -> Objects.equals(user.getEmail(), userUpdateDto.getEmail()))) {
+                throw new FieldContainsException("Email already exists.");
+            }
             final String newEmail = userUpdateDto.getEmail();
             if (!existingUser.getEmail().equals(newEmail)) {
                 existingUser.setEmail(newEmail);
@@ -70,6 +75,12 @@ public class UserService {
     public UserDto createUser(@RequestBody UserDto userDto) {
         if (userDto.getName() == null) {
             userDto.setName(userDto.getEmail());
+        }
+        if (userDto.getEmail() == null) {
+            throw new BadRequestException("Email is required.");
+        }
+        if (repository.findAll().stream().anyMatch(user -> Objects.equals(user.getEmail(), userDto.getEmail()))) {
+            throw new FieldContainsException("Email already exists.");
         }
         return UserMapper.mapToUserDto(repository.save(UserMapper.mapToUser(userDto)));
     }
