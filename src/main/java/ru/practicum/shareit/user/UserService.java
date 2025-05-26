@@ -27,7 +27,7 @@ public class UserService {
             throw new BadRequestException("No fields to update provided.");
         }
 
-        User existingUser = repository.getById(userId)
+        User existingUser = repository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found."));
 
         boolean needsUpdate = false;
@@ -48,7 +48,7 @@ public class UserService {
         }
 
         if (needsUpdate) {
-            User updatedUser = repository.update(existingUser);
+            User updatedUser = repository.save(existingUser);
             return UserMapper.mapToUserDto(updatedUser);
         } else {
             return UserMapper.mapToUserDto(existingUser);
@@ -56,14 +56,14 @@ public class UserService {
     }
 
     public Collection<UserDto> getUsers() {
-        return repository.getAll()
+        return repository.findAll()
                 .stream()
                 .map(UserMapper::mapToUserDto)
                 .collect(Collectors.toList());
     }
 
     public UserDto getUserById(@PathVariable long id) {
-        return UserMapper.mapToUserDto(repository.getById(id)
+        return UserMapper.mapToUserDto(repository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("User not found")));
     }
 
@@ -71,7 +71,7 @@ public class UserService {
         if (userDto.getName() == null) {
             userDto.setName(userDto.getEmail());
         }
-        return UserMapper.mapToUserDto(repository.insert(UserMapper.mapToUser(userDto)));
+        return UserMapper.mapToUserDto(repository.save(UserMapper.mapToUser(userDto)));
     }
 
     public void deleteUser(@PathVariable long id) {
@@ -80,11 +80,11 @@ public class UserService {
         } else if (!isExistsUser(id)) {
             throw new BadRequestException("User doesn't exists");
         }
-        repository.delete(id);
+        repository.deleteById(id);
     }
 
     private boolean isExistsUser(long id) {
-        return repository.getAll().stream()
+        return repository.findAll().stream()
                 .anyMatch(userCheck -> userCheck.getId() == id);
     }
 }
