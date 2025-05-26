@@ -1,14 +1,25 @@
 package ru.practicum.shareit.item;
 
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
+import ru.practicum.shareit.booking.Booking;
+import ru.practicum.shareit.booking.BookingRepository;
+import ru.practicum.shareit.comment.Comment;
+import ru.practicum.shareit.comment.CommentMapper;
+import ru.practicum.shareit.comment.CommentRepository;
+import ru.practicum.shareit.comment.dto.CommentCreateDto;
+import ru.practicum.shareit.comment.dto.CommentDto;
 import ru.practicum.shareit.exceptions.BadRequestException;
 import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemUpdateDto;
+import ru.practicum.shareit.request.ItemRequest;
+import ru.practicum.shareit.request.ItemRequestRepository;
+import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -17,16 +28,23 @@ import java.util.stream.Collectors;
 public class ItemService {
     private final ItemRepository repository;
     private final UserRepository userRepository;
+    private final ItemRequestRepository requestRepository;
+    private final BookingRepository bookingRepository;
+    private final CommentRepository commentRepository;
 
     @Autowired
-    public ItemService(ItemRepository repository, UserRepository userRepository) {
+    public ItemService(ItemRepository repository, UserRepository userRepository,
+                       ItemRequestRepository requestRepository, BookingRepository bookingRepository, CommentRepository commentRepository) {
         this.repository = repository;
         this.userRepository = userRepository;
+        this.requestRepository = requestRepository;
+        this.bookingRepository = bookingRepository;
+        this.commentRepository = commentRepository;
     }
 
     public ItemDto getItem(long id) {
         return ItemMapper.mapToItemDto(
-                repository.getItemById(id)
+                repository.findById(id)
                         .orElseThrow(() -> new NotFoundException("Item not found")));
     }
 
@@ -34,18 +52,28 @@ public class ItemService {
         if (!isExistsUser(userId)) {
             throw new NotFoundException("User not found");
         }
-        return repository.getAllItems(userId)
+        return repository.findByOwnerId(userId)
                 .stream()
                 .map(ItemMapper::mapToItemDto)
                 .collect(Collectors.toList());
     }
 
-    public ItemDto createItem(@RequestBody ItemDto itemDto, long userId) {
-        if (!isExistsUser(userId)) {
-            throw new NotFoundException("User not found");
+    @Transactional
+    public ItemDto createItem(ItemDto itemDto, long userId) {
+        User owner = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
+
+        ItemRequest request = null;
+        if (itemDto.getRequestId() != null) {
+            request = requestRepository.findById(itemDto.getRequestId())
+                    .orElse(null);
         }
-        itemDto.setOwnerId(userId);
-        return ItemMapper.mapToItemDto(repository.addItem(ItemMapper.mapToItem(itemDto)));
+
+        Item newItem = ItemMapper.mapToItem(itemDto, owner, request);
+
+        Item savedItem = repository.save(newItem);
+
+        return ItemMapper.mapToItemDto(savedItem);
     }
 
     public ItemDto updateItem(long itemId, long userId, ItemUpdateDto itemUpdateDto) {
@@ -57,7 +85,7 @@ public class ItemService {
             throw new BadRequestException("No fields to update provided.");
         }
 
-        Item existingItem = repository.getItemById(itemId)
+        Item existingItem = repository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("Item not found."));
 
         boolean needsUpdate = false;
@@ -86,7 +114,7 @@ public class ItemService {
         }
 
         if (needsUpdate) {
-            Item updatedItem = repository.update(existingItem);
+            Item updatedItem = repository.save(existingItem);
             return ItemMapper.mapToItemDto(updatedItem);
         } else {
             return ItemMapper.mapToItemDto(existingItem);
@@ -97,15 +125,36 @@ public class ItemService {
         if (query.isBlank()) {
             return new ArrayList<>();
         }
-        return repository.getSearchItems(query)
+        return repository.searchByNameOrDescriptionIgnoreCase(query)
                 .stream()
                 .filter(Item::getAvailable)
                 .map(ItemMapper::mapToItemDto)
                 .collect(Collectors.toList());
     }
 
+    public CommentDto createComment(Long itemId, CommentCreateDto commentCreateDto, Long userId) {
+        Booking booking = bookingRepository.findByItemIdAndBookerId(itemId, userId);
+        if (booking == null) {
+            throw new NotFoundException("Booking not found");
+        }
+        if (booking.getEnd().isAfter(LocalDateTime.now())) {
+            throw new BadRequestException("Booking is ending date");
+        }
+
+        Comment comment = new Comment();
+        comment.setText(commentCreateDto.getText());
+        comment.setAuthor(userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found with id: " + userId)));
+        comment.setItem(repository.findById(itemId)
+                .orElseThrow(() -> new NotFoundException("Item not found with id: " + itemId)));
+        Comment createComment = commentRepository.save(comment);
+        return CommentMapper.mapToCommentDto(createComment);
+
+
+    }
+
     private boolean isExistsUser(long id) {
-        return userRepository.getAll().stream()
+        return userRepository.findAll().stream()
                 .anyMatch(userCheck -> userCheck.getId() == id);
     }
 }
