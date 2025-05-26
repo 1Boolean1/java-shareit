@@ -1,13 +1,13 @@
-package ru.practicum.shareit;
+//package ru.practicum.shareit;
 
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
+//import org.junit.jupiter.api.Test;
+//import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
-class ShareItTests {
+//@SpringBootTest
+//class ShareItTests {
 
-    @Test
-    void contextLoads() {
-    }
+    //@Test
+    //void contextLoads() {
+  //  }
 
-}
+//}

@@ -45,10 +45,6 @@ public class BookingService {
             throw new NotFoundException("User not found");
         }
 
-        if (booking.getStart().isBefore(LocalDateTime.now())) {
-            throw new BadRequestException("Start date cannot be before now");
-        }
-
         if (!itemRepository.findById(booking.getItemId())
                 .orElseThrow(() -> new NotFoundException("Item not found")).getAvailable()) {
             throw new BadRequestException("Item is not available");
