@@ -12,7 +12,6 @@ import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 
-import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 
@@ -43,10 +42,6 @@ public class BookingService {
         if (userRepository.findById(bookerId).isEmpty()) {
             log.warn("User not found");
             throw new NotFoundException("User not found");
-        }
-
-        if (booking.getStart().isBefore(LocalDateTime.now())) {
-            throw new BadRequestException("Start date cannot be before now");
         }
 
         if (!itemRepository.findById(booking.getItemId())
