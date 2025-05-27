@@ -2,17 +2,19 @@ package ru.practicum.shareit.user;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exceptions.BadRequestException;
+import ru.practicum.shareit.exceptions.FieldContainsException;
 import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserUpdateDto;
 
 import java.util.Collection;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
+@Transactional
 @Service
 public class UserService {
     private final UserRepository repository;
@@ -27,7 +29,7 @@ public class UserService {
             throw new BadRequestException("No fields to update provided.");
         }
 
-        User existingUser = repository.getById(userId)
+        User existingUser = repository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found."));
 
         boolean needsUpdate = false;
@@ -40,6 +42,9 @@ public class UserService {
         }
 
         if (userUpdateDto.getEmail() != null && !userUpdateDto.getEmail().isBlank()) {
+            if (repository.findAll().stream().anyMatch(user -> Objects.equals(user.getEmail(), userUpdateDto.getEmail()))) {
+                throw new FieldContainsException("Email already exists.");
+            }
             final String newEmail = userUpdateDto.getEmail();
             if (!existingUser.getEmail().equals(newEmail)) {
                 existingUser.setEmail(newEmail);
@@ -48,43 +53,51 @@ public class UserService {
         }
 
         if (needsUpdate) {
-            User updatedUser = repository.update(existingUser);
+            User updatedUser = repository.save(existingUser);
             return UserMapper.mapToUserDto(updatedUser);
         } else {
             return UserMapper.mapToUserDto(existingUser);
         }
     }
 
+    @Transactional(readOnly = true)
     public Collection<UserDto> getUsers() {
-        return repository.getAll()
+        return repository.findAll()
                 .stream()
                 .map(UserMapper::mapToUserDto)
                 .collect(Collectors.toList());
     }
 
-    public UserDto getUserById(@PathVariable long id) {
-        return UserMapper.mapToUserDto(repository.getById(id)
+    @Transactional(readOnly = true)
+    public UserDto getUserById(long id) {
+        return UserMapper.mapToUserDto(repository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("User not found")));
     }
 
-    public UserDto createUser(@RequestBody UserDto userDto) {
+    public UserDto createUser(UserDto userDto) {
         if (userDto.getName() == null) {
             userDto.setName(userDto.getEmail());
         }
-        return UserMapper.mapToUserDto(repository.insert(UserMapper.mapToUser(userDto)));
+        if (userDto.getEmail() == null) {
+            throw new BadRequestException("Email is required.");
+        }
+        if (repository.findAll().stream().anyMatch(user -> Objects.equals(user.getEmail(), userDto.getEmail()))) {
+            throw new FieldContainsException("Email already exists.");
+        }
+        return UserMapper.mapToUserDto(repository.save(UserMapper.mapToUser(userDto)));
     }
 
-    public void deleteUser(@PathVariable long id) {
+    public void deleteUser(long id) {
         if (id == 0) {
             throw new BadRequestException("Id can't be 0");
         } else if (!isExistsUser(id)) {
             throw new BadRequestException("User doesn't exists");
         }
-        repository.delete(id);
+        repository.deleteById(id);
     }
 
     private boolean isExistsUser(long id) {
-        return repository.getAll().stream()
+        return repository.findAll().stream()
                 .anyMatch(userCheck -> userCheck.getId() == id);
     }
 }
