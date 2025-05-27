@@ -1,8 +1,8 @@
 package ru.practicum.shareit.item;
 
-import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.comment.Comment;
@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Transactional
 @Service
 public class ItemService {
     private final ItemRepository repository;
@@ -42,12 +43,14 @@ public class ItemService {
         this.commentRepository = commentRepository;
     }
 
+    @Transactional(readOnly = true)
     public ItemDto getItem(long id) {
         return ItemMapper.mapToItemDto(
                 repository.findById(id)
                         .orElseThrow(() -> new NotFoundException("Item not found")));
     }
 
+    @Transactional(readOnly = true)
     public List<ItemDto> getItems(long userId) {
         if (!isExistsUser(userId)) {
             throw new NotFoundException("User not found");
@@ -58,7 +61,6 @@ public class ItemService {
                 .collect(Collectors.toList());
     }
 
-    @Transactional
     public ItemDto createItem(ItemDto itemDto, long userId) {
         User owner = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
@@ -121,6 +123,7 @@ public class ItemService {
         }
     }
 
+    @Transactional(readOnly = true)
     public List<ItemDto> getSearchItems(String query) {
         if (query.isBlank()) {
             return new ArrayList<>();

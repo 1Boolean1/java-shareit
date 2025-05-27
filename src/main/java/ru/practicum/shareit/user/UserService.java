@@ -2,8 +2,7 @@ package ru.practicum.shareit.user;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exceptions.BadRequestException;
 import ru.practicum.shareit.exceptions.FieldContainsException;
 import ru.practicum.shareit.exceptions.NotFoundException;
@@ -15,6 +14,7 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+@Transactional
 @Service
 public class UserService {
     private final UserRepository repository;
@@ -60,6 +60,7 @@ public class UserService {
         }
     }
 
+    @Transactional(readOnly = true)
     public Collection<UserDto> getUsers() {
         return repository.findAll()
                 .stream()
@@ -67,12 +68,13 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
-    public UserDto getUserById(@PathVariable long id) {
+    @Transactional(readOnly = true)
+    public UserDto getUserById(long id) {
         return UserMapper.mapToUserDto(repository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("User not found")));
     }
 
-    public UserDto createUser(@RequestBody UserDto userDto) {
+    public UserDto createUser(UserDto userDto) {
         if (userDto.getName() == null) {
             userDto.setName(userDto.getEmail());
         }
@@ -85,7 +87,7 @@ public class UserService {
         return UserMapper.mapToUserDto(repository.save(UserMapper.mapToUser(userDto)));
     }
 
-    public void deleteUser(@PathVariable long id) {
+    public void deleteUser(long id) {
         if (id == 0) {
             throw new BadRequestException("Id can't be 0");
         } else if (!isExistsUser(id)) {

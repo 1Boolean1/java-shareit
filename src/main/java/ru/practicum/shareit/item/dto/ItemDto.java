@@ -1,5 +1,7 @@
 package ru.practicum.shareit.item.dto;
 
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,10 +14,13 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ItemDto {
-    private long id;
+    @Min(1)
+    private Long id;
+    @NotBlank
     private String name;
     private String description;
     private Boolean available;
+    @Min(1)
     private Long ownerId;
     private Long requestId;
     private List<CommentDto> comments;

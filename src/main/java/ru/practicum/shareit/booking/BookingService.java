@@ -2,6 +2,7 @@ package ru.practicum.shareit.booking;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.dto.BookingCreateDto;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.util.BookingStatus;
@@ -15,6 +16,7 @@ import ru.practicum.shareit.user.UserRepository;
 import java.util.Comparator;
 import java.util.List;
 
+@Transactional
 @Slf4j
 @Service
 public class BookingService {
@@ -82,6 +84,7 @@ public class BookingService {
         }
     }
 
+    @Transactional(readOnly = true)
     public BookingDto getBooking(Long bookingId, Long userId) {
         Booking booking = repository.findById(bookingId)
                 .orElseThrow(() -> new NotFoundException("Booking not found"));
@@ -93,6 +96,7 @@ public class BookingService {
         }
     }
 
+    @Transactional(readOnly = true)
     public List<BookingDto> getUserBookings(Long userId, String state) {
         if (userRepository.findById(userId).isEmpty()) {
             throw new NotFoundException("User not found");
@@ -123,6 +127,7 @@ public class BookingService {
         };
     }
 
+    @Transactional(readOnly = true)
     public List<BookingDto> getOwnerBookings(Long userId, String state) {
         if (userRepository.findById(userId).isEmpty()) {
             throw new NotFoundException("User not found");

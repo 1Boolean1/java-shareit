@@ -1,5 +1,6 @@
 package ru.practicum.shareit.item;
 
+import lombok.experimental.UtilityClass;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingMapper;
 import ru.practicum.shareit.booking.util.BookingStatus;
@@ -12,6 +13,7 @@ import ru.practicum.shareit.user.User;
 import java.util.Comparator;
 import java.util.List;
 
+@UtilityClass
 public class ItemMapper {
     public static ItemDto mapToItemDto(Item item) {
         Long ownerId = (item.getOwner() != null) ? item.getOwner().getId() : null;
@@ -38,7 +40,7 @@ public class ItemMapper {
         }
 
         List<Booking> nextBookings = item.getBookings().stream()
-                .filter(booking -> booking.getStatus() == BookingStatus.APPROVED)
+                .filter(booking -> booking.getStatus() == BookingStatus.WAITING)
                 .sorted(Comparator.comparing(Booking::getStart))
                 .toList();
         if (!nextBookings.isEmpty()) {
