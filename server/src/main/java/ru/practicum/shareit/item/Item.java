@@ -27,8 +27,8 @@ public class Item {
     @NotBlank(message = "Name can't be null")
     private String name;
 
-    @Column(nullable = false)
-    @NotBlank(message = "Description can't be null")
+    @Column
+    @NotBlank
     private String description;
 
     @Column(name = "available", nullable = false)

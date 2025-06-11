@@ -51,7 +51,8 @@ public class ItemServiceIntegrationTest {
     @Autowired
     private EntityManager entityManager;
 
-    private User owner, booker, requester;
+    private User owner;
+    private User booker;
     private Item item1, item2;
     private ItemRequest itemRequest;
     private Comment commentOnItem1;
@@ -67,7 +68,7 @@ public class ItemServiceIntegrationTest {
 
         owner = userRepository.save(new User(1L, "Owner Name", "owner@example.com"));
         booker = userRepository.save(new User(2L, "Booker Name", "booker@example.com"));
-        requester = userRepository.save(new User(3L, "Requester Name", "requester@example.com"));
+        User requester = userRepository.save(new User(3L, "Requester Name", "requester@example.com"));
 
         itemRequest = itemRequestRepository.save(new ItemRequest(0L, "Need a drill", requester, LocalDateTime.now().minusDays(10), Collections.emptyList()));
 
@@ -96,7 +97,7 @@ public class ItemServiceIntegrationTest {
     }
 
     @Test
-    void getItem_whenItemExists_shouldReturnItemDtoWithCommentsAndBookings() {
+    void getItemWhenItemExistsShouldReturnItemDtoWithCommentsAndBookings() {
         ItemDto result = itemService.getItem(item1.getId());
 
         assertNotNull(result);
@@ -105,9 +106,9 @@ public class ItemServiceIntegrationTest {
         assertThat(result.getRequestId()).isEqualTo(itemRequest.getId());
 
         assertThat(result.getComments()).hasSize(1);
-        assertThat(result.getComments().get(0).getText()).isEqualTo(commentOnItem1.getText());
-        assertThat(result.getComments().get(0).getAuthorName()).isEqualTo(booker.getName());
-        assertThat(result.getComments().get(0).getItem().getId()).isEqualTo(item1.getId());
+        assertThat(result.getComments().getFirst().getText()).isEqualTo(commentOnItem1.getText());
+        assertThat(result.getComments().getFirst().getAuthorName()).isEqualTo(booker.getName());
+        assertThat(result.getComments().getFirst().getItem().getId()).isEqualTo(item1.getId());
 
         assertNotNull(result.getLastBooking());
         assertThat(result.getLastBooking().getStatus()).isEqualTo(BookingStatus.REJECTED);
@@ -119,7 +120,7 @@ public class ItemServiceIntegrationTest {
     }
 
     @Test
-    void getItem_whenItemHasNoCommentsOrBookings_shouldReturnItemDtoWithoutThem() {
+    void getItemWhenItemHasNoCommentsOrBookingsShouldReturnItemDtoWithoutThem() {
         ItemDto result = itemService.getItem(item2.getId());
 
         assertNotNull(result);
@@ -131,12 +132,12 @@ public class ItemServiceIntegrationTest {
 
 
     @Test
-    void getItem_whenItemDoesNotExist_shouldThrowNotFoundException() {
+    void getItemWhenItemDoesNotExistShouldThrowNotFoundException() {
         assertThrows(NotFoundException.class, () -> itemService.getItem(999L));
     }
 
     @Test
-    void getItems_whenUserExists_shouldReturnUserItemsList() {
+    void getItemsWhenUserExistsShouldReturnUserItemsList() {
         List<ItemDto> result = itemService.getItems(owner.getId());
         assertThat(result).hasSize(2);
 
@@ -153,12 +154,12 @@ public class ItemServiceIntegrationTest {
 
 
     @Test
-    void getItems_whenUserDoesNotExist_shouldThrowNotFoundException() {
+    void getItemsWhenUserDoesNotExistShouldThrowNotFoundException() {
         assertThrows(NotFoundException.class, () -> itemService.getItems(999L));
     }
 
     @Test
-    void createItem_whenDataIsValid_shouldCreateAndReturnItemDto() {
+    void createItemWhenDataIsValidShouldCreateAndReturnItemDto() {
         ItemDto newItemDto = new ItemDto(null, "New Saw", "Sharp", true, owner.getId(), null, null, null, null);
         ItemDto created = itemService.createItem(newItemDto, owner.getId());
 
@@ -175,7 +176,7 @@ public class ItemServiceIntegrationTest {
     }
 
     @Test
-    void createItem_withRequestId_shouldSetRequestRelation() {
+    void createItemWithRequestIdShouldSetRequestRelation() {
         ItemDto newItemDto = new ItemDto(null, "Response to request", "For request", true, owner.getId(), itemRequest.getId(), null, null, null);
         ItemDto created = itemService.createItem(newItemDto, owner.getId());
 
@@ -186,13 +187,13 @@ public class ItemServiceIntegrationTest {
     }
 
     @Test
-    void createItem_whenUserDoesNotExist_shouldThrowNotFoundException() {
+    void createItemWhenUserDoesNotExistShouldThrowNotFoundException() {
         ItemDto newItemDto = new ItemDto(null, "Some Item", "Description", true, 999L, null, null, null, null);
         assertThrows(NotFoundException.class, () -> itemService.createItem(newItemDto, 999L));
     }
 
     @Test
-    void updateItem_whenDataIsValidAndUserIsOwner_shouldUpdateAndReturnItemDto() {
+    void updateItemWhenDataIsValidAndUserIsOwnerShouldUpdateAndReturnItemDto() {
         ItemUpdateDto updates = new ItemUpdateDto("Updated Drill", null, false);
         ItemDto updated = itemService.updateItem(item1.getId(), owner.getId(), updates);
 
@@ -209,46 +210,46 @@ public class ItemServiceIntegrationTest {
     }
 
     @Test
-    void updateItem_whenUserIsNotOwner_shouldThrowNotFoundException() {
+    void updateItemWhenUserIsNotOwnerShouldThrowNotFoundException() {
         ItemUpdateDto updates = new ItemUpdateDto("Attempt", null, null);
         assertThrows(NotFoundException.class, () -> itemService.updateItem(item1.getId(), booker.getId(), updates));
     }
 
     @Test
-    void updateItem_whenNoFieldsToUpdate_shouldThrowBadRequestException() {
+    void updateItemWhenNoFieldsToUpdateShouldThrowBadRequestException() {
         ItemUpdateDto emptyUpdates = new ItemUpdateDto(null, null, null);
         assertThrows(BadRequestException.class, () -> itemService.updateItem(item1.getId(), owner.getId(), emptyUpdates));
     }
 
 
     @Test
-    void searchItems_whenMatchesExistAndItemsAvailable_shouldReturnListWithDetails() {
+    void searchItemsWhenMatchesExistAndItemsAvailableShouldReturnListWithDetails() {
         item2.setAvailable(true);
         itemRepository.saveAndFlush(item2);
         entityManager.clear();
 
         List<ItemDto> results = itemService.getSearchItems("drill");
         assertThat(results).hasSize(1);
-        ItemDto foundItem1 = results.get(0);
+        ItemDto foundItem1 = results.getFirst();
         assertThat(foundItem1.getName()).isEqualTo("Drill");
         assertThat(foundItem1.getComments()).hasSize(1);
         assertNotNull(foundItem1.getLastBooking());
 
         results = itemService.getSearchItems("hammer");
         assertThat(results).hasSize(1);
-        ItemDto foundItem2 = results.get(0);
+        ItemDto foundItem2 = results.getFirst();
         assertThat(foundItem2.getName()).isEqualTo("Hammer");
         assertThat(foundItem2.getComments()).isEmpty();
     }
 
     @Test
-    void searchItems_whenItemNotAvailable_shouldNotReturnIt() {
+    void searchItemsWhenItemNotAvailableShouldNotReturnIt() {
         List<ItemDto> results = itemService.getSearchItems("hammer");
         assertThat(results).isEmpty();
     }
 
     @Test
-    void searchItems_whenQueryIsEmpty_shouldReturnEmptyList() {
+    void searchItemsWhenQueryIsEmptyShouldReturnEmptyList() {
         List<ItemDto> results = itemService.getSearchItems("");
         assertThat(results).isEmpty();
         results = itemService.getSearchItems("   ");
@@ -256,7 +257,7 @@ public class ItemServiceIntegrationTest {
     }
 
     @Test
-    void createComment_whenNoBookingForUserAndItem_shouldThrowNotFoundException() {
+    void createCommentWhenNoBookingForUserAndItemShouldThrowNotFoundException() {
         CommentCreateDto commentCreateDto = new CommentCreateDto("Some comment...");
         assertThrows(NotFoundException.class, () -> itemService.createComment(item2.getId(), commentCreateDto, booker.getId()));
     }
