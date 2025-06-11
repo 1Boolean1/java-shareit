@@ -35,12 +35,10 @@ public class UserControllerTest {
     @MockBean
     private UserRepository userRepositoryMock;
 
-    private UserDto userDto1;
     private User userEntity1;
 
     @BeforeEach
     void setUp() {
-        userDto1 = new UserDto(1L, "Test User 1", "user1@example.com");
         userEntity1 = new User(1L, "Test User 1", "user1@example.com");
 
         lenient().when(userRepositoryMock.findById(anyLong())).thenReturn(Optional.empty());
@@ -57,7 +55,7 @@ public class UserControllerTest {
     }
 
     @Test
-    void createUser_whenEmailIsNull_shouldReturnBadRequest() throws Exception {
+    void createUserWhenEmailIsNullShouldReturnBadRequest() throws Exception {
         UserDto invalidUserDto = new UserDto(0L, "Test Name", null);
 
         mockMvc.perform(post("/users")
@@ -67,7 +65,7 @@ public class UserControllerTest {
     }
 
     @Test
-    void createUser_whenEmailAlreadyExists_shouldReturnConflictStatus() throws Exception {
+    void createUserWhenEmailAlreadyExistsShouldReturnConflictStatus() throws Exception {
         UserDto existingUserDto = new UserDto(0L, "Existing Name", "user1@example.com");
         when(userRepositoryMock.findAll()).thenReturn(List.of(userEntity1));
 
@@ -79,7 +77,7 @@ public class UserControllerTest {
 
 
     @Test
-    void getUsers_shouldReturnListOfUserDtos() throws Exception {
+    void getUsersShouldReturnListOfUserDtos() throws Exception {
         User userEntity2 = new User(2L, "Test User 2", "user2@example.com");
         when(userRepositoryMock.findAll()).thenReturn(List.of(userEntity1, userEntity2));
 
@@ -91,7 +89,7 @@ public class UserControllerTest {
     }
 
     @Test
-    void updateUser_whenUserExistsAndDataIsValid_shouldReturnUpdatedUserDto() throws Exception {
+    void updateUserWhenUserExistsAndDataIsValidShouldReturnUpdatedUserDto() throws Exception {
         long userIdToUpdate = userEntity1.getId();
         UserUpdateDto updateDto = new UserUpdateDto("Updated Name", "updated.email@example.com");
 
@@ -109,7 +107,7 @@ public class UserControllerTest {
     }
 
     @Test
-    void updateUser_whenUserIdIsInvalid_shouldReturnBadRequestFromController() throws Exception {
+    void updateUserWhenUserIdIsInvalidShouldReturnBadRequestFromController() throws Exception {
         UserUpdateDto updateDto = new UserUpdateDto("Name", "email@example.com");
         mockMvc.perform(patch("/users/{id}", 0L) // Invalid ID by controller's check
                         .contentType(MediaType.APPLICATION_JSON)
@@ -118,7 +116,7 @@ public class UserControllerTest {
     }
 
     @Test
-    void updateUser_whenUserNotFound_shouldReturnNotFound() throws Exception {
+    void updateUserWhenUserNotFoundShouldReturnNotFound() throws Exception {
         UserUpdateDto updateDto = new UserUpdateDto("Name", "email@example.com");
         when(userRepositoryMock.findById(99L)).thenReturn(Optional.empty());
 
@@ -129,7 +127,7 @@ public class UserControllerTest {
     }
 
     @Test
-    void updateUser_whenNoFieldsToUpdate_shouldReturnBadRequestFromService() throws Exception {
+    void updateUserWhenNoFieldsToUpdateShouldReturnBadRequestFromService() throws Exception {
         UserUpdateDto emptyUpdateDto = new UserUpdateDto(null, null);
 
         mockMvc.perform(patch("/users/{id}", userEntity1.getId())
@@ -139,7 +137,7 @@ public class UserControllerTest {
     }
 
     @Test
-    void updateUser_whenEmailAlreadyExistsForAnotherUser_shouldReturnConflictStatus() throws Exception {
+    void updateUserWhenEmailAlreadyExistsForAnotherUserShouldReturnConflictStatus() throws Exception {
         UserUpdateDto updateDto = new UserUpdateDto(null, "existing.other@example.com");
         User otherUserWithEmail = new User(3L, "Other User", "existing.other@example.com");
         when(userRepositoryMock.findAll()).thenReturn(List.of(userEntity1, otherUserWithEmail));
@@ -151,7 +149,7 @@ public class UserControllerTest {
     }
 
     @Test
-    void deleteUser_whenUserExists_shouldReturnOkStatus() throws Exception {
+    void deleteUserWhenUserExistsShouldReturnOkStatus() throws Exception {
         when(userRepositoryMock.findAll()).thenReturn(List.of(userEntity1));
 
         mockMvc.perform(delete("/users/{id}", userEntity1.getId()))
@@ -161,13 +159,13 @@ public class UserControllerTest {
     }
 
     @Test
-    void deleteUser_whenIdIsZero_shouldReturnBadRequestFromService() throws Exception {
+    void deleteUserWhenIdIsZeroShouldReturnBadRequestFromService() throws Exception {
         mockMvc.perform(delete("/users/{id}", 0L))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
-    void deleteUser_whenUserDoesNotExist_shouldReturnBadRequestFromService() throws Exception {
+    void deleteUserWhenUserDoesNotExistShouldReturnBadRequestFromService() throws Exception {
         when(userRepositoryMock.findAll()).thenReturn(Collections.emptyList());
 
         mockMvc.perform(delete("/users/{id}", 99L))

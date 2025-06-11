@@ -27,12 +27,10 @@ public class Item {
     @NotBlank(message = "Name can't be null")
     private String name;
 
-    @Column(nullable = false)
-    @NotBlank(message = "Description can't be null")
+    @Column
     private String description;
 
-    @Column(name = "available", nullable = false)
-    @NotNull(message = "status can't be null")
+    @Column(name = "available")
     private Boolean available;
 
     @ManyToOne(fetch = FetchType.LAZY)
