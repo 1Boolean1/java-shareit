@@ -49,7 +49,7 @@ public class UserServiceIntegrationTest {
     }
 
     @Test
-    void createUser_whenValid_shouldCreateAndReturnUserDto() {
+    void createUserWhenValidShouldCreateAndReturnUserDto() {
         UserDto newUserDto = new UserDto(0L, "New User", "new@example.com");
         UserDto created = userService.createUser(newUserDto);
 
@@ -63,7 +63,7 @@ public class UserServiceIntegrationTest {
     }
 
     @Test
-    void createUser_whenNameIsNull_shouldUseEmailAsName() {
+    void createUserWhenNameIsNullShouldUseEmailAsName() {
         UserDto newUserDto = new UserDto(0L, null, "nameisemail@example.com");
         UserDto created = userService.createUser(newUserDto);
 
@@ -72,38 +72,38 @@ public class UserServiceIntegrationTest {
     }
 
     @Test
-    void createUser_whenEmailIsNull_shouldThrowBadRequestException() {
+    void createUserWhenEmailIsNullShouldThrowBadRequestException() {
         UserDto newUserDto = new UserDto(0L, "Test Name", null);
         assertThrows(BadRequestException.class, () -> userService.createUser(newUserDto));
     }
 
     @Test
-    void createUser_whenEmailAlreadyExists_shouldThrowFieldContainsException() {
+    void createUserWhenEmailAlreadyExistsShouldThrowFieldContainsException() {
         UserDto duplicateEmailDto = new UserDto(0L, "Another Name", user1.getEmail());
         assertThrows(FieldContainsException.class, () -> userService.createUser(duplicateEmailDto));
     }
 
     @Test
-    void getUsers_shouldReturnAllUsers() {
+    void getUsersShouldReturnAllUsers() {
         Collection<UserDto> users = userService.getUsers();
         assertThat(users).hasSize(2);
         assertThat(users).extracting(UserDto::getEmail).containsExactlyInAnyOrder(user1.getEmail(), user2.getEmail());
     }
 
     @Test
-    void getUserById_whenUserExists_shouldReturnUserDto() {
+    void getUserByIdWhenUserExistsShouldReturnUserDto() {
         UserDto found = userService.getUserById(user1.getId());
         assertThat(found.getId()).isEqualTo(user1.getId());
         assertThat(found.getEmail()).isEqualTo(user1.getEmail());
     }
 
     @Test
-    void getUserById_whenUserDoesNotExist_shouldThrowNoSuchElementException() {
+    void getUserByIdWhenUserDoesNotExistShouldThrowNoSuchElementException() {
         assertThrows(NoSuchElementException.class, () -> userService.getUserById(999L));
     }
 
     @Test
-    void updateUser_whenUserExistsAndDataIsValid_shouldUpdateAndReturnUserDto() {
+    void updateUserWhenUserExistsAndDataIsValidShouldUpdateAndReturnUserDto() {
         UserUpdateDto updates = new UserUpdateDto("Updated User One", "updated.user1@example.com");
         UserDto updated = userService.updateUser(user1.getId(), updates);
 
@@ -116,7 +116,7 @@ public class UserServiceIntegrationTest {
     }
 
     @Test
-    void updateUser_onlyName_shouldUpdateOnlyName() {
+    void updateUserOnlyNameShouldUpdateOnlyName() {
         UserUpdateDto updates = new UserUpdateDto("Only Name Updated", null);
         UserDto updated = userService.updateUser(user1.getId(), updates);
 
@@ -125,7 +125,7 @@ public class UserServiceIntegrationTest {
     }
 
     @Test
-    void updateUser_onlyEmail_shouldUpdateOnlyEmail() {
+    void updateUserOnlyEmailShouldUpdateOnlyEmail() {
         UserUpdateDto updates = new UserUpdateDto(null, "only.email.updated@example.com");
         UserDto updated = userService.updateUser(user1.getId(), updates);
 
@@ -134,30 +134,30 @@ public class UserServiceIntegrationTest {
     }
 
     @Test
-    void updateUser_whenUserDoesNotExist_shouldThrowNotFoundException() {
+    void updateUserWhenUserDoesNotExistShouldThrowNotFoundException() {
         UserUpdateDto updates = new UserUpdateDto("Name", "email@example.com");
         assertThrows(NotFoundException.class, () -> userService.updateUser(999L, updates));
     }
 
     @Test
-    void updateUser_whenNoFieldsToUpdate_shouldThrowBadRequestException() {
+    void updateUserWhenNoFieldsToUpdateShouldThrowBadRequestException() {
         UserUpdateDto emptyUpdates = new UserUpdateDto(null, null);
         assertThrows(BadRequestException.class, () -> userService.updateUser(user1.getId(), emptyUpdates));
     }
 
     @Test
-    void updateUser_whenEmailAlreadyExistsForAnotherUser_shouldThrowFieldContainsException() {
+    void updateUserWhenEmailAlreadyExistsForAnotherUserShouldThrowFieldContainsException() {
         UserUpdateDto updates = new UserUpdateDto(null, user2.getEmail());
         assertThrows(FieldContainsException.class, () -> userService.updateUser(user1.getId(), updates));
     }
 
     @Test
-    void deleteUser_whenIdIsZero_shouldThrowBadRequestException() {
+    void deleteUserWhenIdIsZeroShouldThrowBadRequestException() {
         assertThrows(BadRequestException.class, () -> userService.deleteUser(0L));
     }
 
     @Test
-    void deleteUser_whenUserDoesNotExist_shouldThrowBadRequestException() {
+    void deleteUserWhenUserDoesNotExistShouldThrowBadRequestException() {
         assertThrows(BadRequestException.class, () -> userService.deleteUser(999L));
     }
 }
