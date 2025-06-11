@@ -41,8 +41,6 @@ public class BookingControllerTest {
 
     private BookingDto bookingDto;
     private BookingCreateDto bookingCreateDto;
-    private UserDto bookerDto;
-    private ItemShortDto itemShortDto;
     private final long bookerId = 1L;
     private final long ownerId = 2L;
     private final long bookingId = 1L;
@@ -53,15 +51,15 @@ public class BookingControllerTest {
     @BeforeEach
     void setUp() {
         now = LocalDateTime.now();
-        bookerDto = new UserDto(bookerId, "Booker Name", "booker@example.com");
-        itemShortDto = new ItemShortDto(itemId, "Test Item", "Item Description");
+        UserDto bookerDto = new UserDto(bookerId, "Booker Name", "booker@example.com");
+        ItemShortDto itemShortDto = new ItemShortDto(itemId, "Test Item", "Item Description");
 
         bookingDto = new BookingDto(bookingId, now.plusHours(1), now.plusHours(5), itemShortDto, bookerDto, BookingStatus.WAITING);
         bookingCreateDto = new BookingCreateDto(itemId, now.plusHours(1), now.plusHours(5));
     }
 
     @Test
-    void createBooking_whenItemNotAvailable_shouldReturnBadRequest() throws Exception {
+    void createBookingWhenItemNotAvailableShouldReturnBadRequest() throws Exception {
         when(bookingService.createBooking(any(BookingCreateDto.class), eq(bookerId)))
                 .thenThrow(new BadRequestException("Item is not available"));
 
@@ -73,7 +71,7 @@ public class BookingControllerTest {
     }
 
     @Test
-    void createBooking_whenDatesInvalid_shouldReturnBadRequest() throws Exception {
+    void createBookingWhenDatesInvalidShouldReturnBadRequest() throws Exception {
         BookingCreateDto invalidDatesDto = new BookingCreateDto(itemId, now.plusHours(5), now.plusHours(1));
         when(bookingService.createBooking(any(BookingCreateDto.class), eq(bookerId)))
                 .thenThrow(new BadRequestException("Start date cannot be after end date"));
@@ -87,7 +85,7 @@ public class BookingControllerTest {
 
 
     @Test
-    void approveOrRejectBooking_whenApproved_shouldReturnApprovedBookingDto() throws Exception {
+    void approveOrRejectBookingWhenApprovedShouldReturnApprovedBookingDto() throws Exception {
         bookingDto.setStatus(BookingStatus.APPROVED);
         when(bookingService.approveOrRejectBooking(eq(bookingId), eq(ownerId), eq(true))).thenReturn(bookingDto);
 
@@ -99,7 +97,7 @@ public class BookingControllerTest {
     }
 
     @Test
-    void approveOrRejectBooking_whenRejected_shouldReturnRejectedBookingDto() throws Exception {
+    void approveOrRejectBookingWhenRejectedShouldReturnRejectedBookingDto() throws Exception {
         bookingDto.setStatus(BookingStatus.REJECTED);
         when(bookingService.approveOrRejectBooking(eq(bookingId), eq(ownerId), eq(false))).thenReturn(bookingDto);
 
@@ -111,7 +109,7 @@ public class BookingControllerTest {
     }
 
     @Test
-    void approveOrRejectBooking_whenUserNotOwner_shouldReturnBadRequest() throws Exception {
+    void approveOrRejectBookingWhenUserNotOwnerShouldReturnBadRequest() throws Exception {
         long notOwnerId = 99L;
         when(bookingService.approveOrRejectBooking(eq(bookingId), eq(notOwnerId), eq(true)))
                 .thenThrow(new BadRequestException("You are not owner of this booking"));
@@ -124,7 +122,7 @@ public class BookingControllerTest {
 
 
     @Test
-    void getBooking_whenUserIsBookerOrOwner_shouldReturnBookingDto() throws Exception {
+    void getBookingWhenUserIsBookerOrOwnerShouldReturnBookingDto() throws Exception {
         when(bookingService.getBooking(eq(bookingId), eq(bookerId))).thenReturn(bookingDto);
 
         mockMvc.perform(get("/bookings/{bookingId}", bookingId)
@@ -134,7 +132,7 @@ public class BookingControllerTest {
     }
 
     @Test
-    void getBooking_whenUserNotAuthorized_shouldReturnBadRequest() throws Exception {
+    void getBookingWhenUserNotAuthorizedShouldReturnBadRequest() throws Exception {
         long unauthorizedUserId = 99L;
         when(bookingService.getBooking(eq(bookingId), eq(unauthorizedUserId)))
                 .thenThrow(new BadRequestException("Booking is not owned by the user"));
@@ -145,7 +143,7 @@ public class BookingControllerTest {
     }
 
     @Test
-    void getBooking_whenBookingNotFound_shouldReturnNotFound() throws Exception {
+    void getBookingWhenBookingNotFoundShouldReturnNotFound() throws Exception {
         when(bookingService.getBooking(eq(999L), eq(bookerId)))
                 .thenThrow(new NotFoundException("Booking not found"));
 
@@ -156,7 +154,7 @@ public class BookingControllerTest {
 
 
     @Test
-    void getUserBookings_whenDefaultStateAll_shouldReturnListOfBookingDto() throws Exception {
+    void getUserBookingsWhenDefaultStateAllShouldReturnListOfBookingDto() throws Exception {
         when(bookingService.getUserBookings(eq(bookerId), eq("ALL"))).thenReturn(List.of(bookingDto));
 
         mockMvc.perform(get("/bookings")
@@ -168,7 +166,7 @@ public class BookingControllerTest {
     }
 
     @Test
-    void getUserBookings_whenStateIsInvalid_shouldReturnBadRequest() throws Exception {
+    void getUserBookingsWhenStateIsInvalidShouldReturnBadRequest() throws Exception {
         when(bookingService.getUserBookings(eq(bookerId), eq("INVALID_STATE")))
                 .thenThrow(new BadRequestException("Invalid state"));
 
@@ -180,7 +178,7 @@ public class BookingControllerTest {
 
 
     @Test
-    void getOwnerBookings_whenDefaultStateAll_shouldReturnListOfBookingDto() throws Exception {
+    void getOwnerBookingsWhenDefaultStateAllShouldReturnListOfBookingDto() throws Exception {
         when(bookingService.getOwnerBookings(eq(ownerId), eq("ALL"))).thenReturn(List.of(bookingDto));
 
         mockMvc.perform(get("/bookings/owner")

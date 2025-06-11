@@ -69,7 +69,7 @@ public class BookingServiceIntegrationTest {
     }
 
     @Test
-    void createBooking_whenValid_shouldCreateAndReturnBookingDto() {
+    void createBookingWhenValidShouldCreateAndReturnBookingDto() {
         BookingCreateDto createDto = new BookingCreateDto(item1.getId(), now.plusHours(1), now.plusHours(2));
         BookingDto createdBooking = bookingService.createBooking(createDto, booker.getId());
 
@@ -85,7 +85,7 @@ public class BookingServiceIntegrationTest {
     }
 
     @Test
-    void createBooking_whenStartOrEndNull_shouldThrowBadRequest() {
+    void createBookingWhenStartOrEndNullShouldThrowBadRequest() {
         BookingCreateDto noStartDto = new BookingCreateDto(item1.getId(), null, now.plusHours(2));
         assertThrows(BadRequestException.class, () -> bookingService.createBooking(noStartDto, booker.getId()));
 
@@ -94,38 +94,38 @@ public class BookingServiceIntegrationTest {
     }
 
     @Test
-    void createBooking_whenEndBeforeStart_shouldThrowBadRequest() {
+    void createBookingWhenEndBeforeStartShouldThrowBadRequest() {
         BookingCreateDto invalidDatesDto = new BookingCreateDto(item1.getId(), now.plusHours(2), now.plusHours(1));
         assertThrows(BadRequestException.class, () -> bookingService.createBooking(invalidDatesDto, booker.getId()));
     }
 
     @Test
-    void createBooking_whenEndEqualsStart_shouldThrowBadRequest() {
+    void createBookingWhenEndEqualsStartShouldThrowBadRequest() {
         BookingCreateDto equalDatesDto = new BookingCreateDto(item1.getId(), now.plusHours(1), now.plusHours(1));
         assertThrows(BadRequestException.class, () -> bookingService.createBooking(equalDatesDto, booker.getId()));
     }
 
 
     @Test
-    void createBooking_whenBookerNotFound_shouldThrowNotFound() {
+    void createBookingWhenBookerNotFoundShouldThrowNotFound() {
         BookingCreateDto createDto = new BookingCreateDto(item1.getId(), now.plusHours(1), now.plusHours(2));
         assertThrows(NotFoundException.class, () -> bookingService.createBooking(createDto, 999L));
     }
 
     @Test
-    void createBooking_whenItemNotFound_shouldThrowNotFound() {
+    void createBookingWhenItemNotFoundShouldThrowNotFound() {
         BookingCreateDto createDto = new BookingCreateDto(999L, now.plusHours(1), now.plusHours(2));
         assertThrows(NotFoundException.class, () -> bookingService.createBooking(createDto, booker.getId()));
     }
 
     @Test
-    void createBooking_whenItemNotAvailable_shouldThrowBadRequest() {
+    void createBookingWhenItemNotAvailableShouldThrowBadRequest() {
         BookingCreateDto createDto = new BookingCreateDto(item2NotAvailable.getId(), now.plusHours(1), now.plusHours(2));
         assertThrows(BadRequestException.class, () -> bookingService.createBooking(createDto, booker.getId()));
     }
 
     @Test
-    void approveOrRejectBooking_whenApprove_shouldSetStatusToApproved() {
+    void approveOrRejectBookingWhenApproveShouldSetStatusToApproved() {
         Booking booking = bookingRepository.save(new Booking(0L, now.plusHours(1), now.plusHours(2), item1, booker, BookingStatus.WAITING));
         entityManager.flush();
         entityManager.clear();
@@ -138,7 +138,7 @@ public class BookingServiceIntegrationTest {
     }
 
     @Test
-    void approveOrRejectBooking_whenReject_shouldSetStatusToRejected() {
+    void approveOrRejectBookingWhenRejectShouldSetStatusToRejected() {
         Booking booking = bookingRepository.save(new Booking(0L, now.plusHours(1), now.plusHours(2), item1, booker, BookingStatus.WAITING));
         entityManager.flush();
         entityManager.clear();
@@ -151,12 +151,12 @@ public class BookingServiceIntegrationTest {
     }
 
     @Test
-    void approveOrRejectBooking_whenBookingNotFound_shouldThrowNotFound() {
+    void approveOrRejectBookingWhenBookingNotFoundShouldThrowNotFound() {
         assertThrows(NotFoundException.class, () -> bookingService.approveOrRejectBooking(999L, owner.getId(), true));
     }
 
     @Test
-    void approveOrRejectBooking_whenUserNotOwner_shouldThrowBadRequest() {
+    void approveOrRejectBookingWhenUserNotOwnerShouldThrowBadRequest() {
         Booking booking = bookingRepository.save(new Booking(0L, now.plusHours(1), now.plusHours(2), item1, booker, BookingStatus.WAITING));
         entityManager.flush();
         entityManager.clear();
@@ -164,7 +164,7 @@ public class BookingServiceIntegrationTest {
     }
 
     @Test
-    void getBooking_whenUserIsBooker_shouldReturnBookingDto() {
+    void getBookingWhenUserIsBookerShouldReturnBookingDto() {
         Booking booking = bookingRepository.save(new Booking(0L, now.plusHours(1), now.plusHours(2), item1, booker, BookingStatus.APPROVED));
         entityManager.flush();
         entityManager.clear();
@@ -174,7 +174,7 @@ public class BookingServiceIntegrationTest {
     }
 
     @Test
-    void getBooking_whenUserIsOwner_shouldReturnBookingDto() {
+    void getBookingWhenUserIsOwnerShouldReturnBookingDto() {
         Booking booking = bookingRepository.save(new Booking(0L, now.plusHours(1), now.plusHours(2), item1, booker, BookingStatus.APPROVED));
         entityManager.flush();
         entityManager.clear();
@@ -184,7 +184,7 @@ public class BookingServiceIntegrationTest {
     }
 
     @Test
-    void getBooking_whenUserNotAuthorized_shouldThrowBadRequest() {
+    void getBookingWhenUserNotAuthorizedShouldThrowBadRequest() {
         Booking booking = bookingRepository.save(new Booking(0L, now.plusHours(1), now.plusHours(2), item1, booker, BookingStatus.APPROVED));
         entityManager.flush();
         entityManager.clear();
@@ -192,7 +192,7 @@ public class BookingServiceIntegrationTest {
     }
 
     @Test
-    void getUserBookings_byState_shouldFilterAndSortCorrectly() {
+    void getUserBookingsByStateShouldFilterAndSortCorrectly() {
         bookingRepository.save(new Booking(0L, now.plusHours(1), now.plusHours(2), item1, booker, BookingStatus.WAITING));
         bookingRepository.save(new Booking(0L, now.minusHours(2), now.minusHours(1), item1, booker, BookingStatus.CANCELED));
         bookingRepository.save(new Booking(0L, now.minusHours(3), now.minusHours(0), item1, booker, BookingStatus.APPROVED));
@@ -202,38 +202,38 @@ public class BookingServiceIntegrationTest {
 
         List<BookingDto> futureBookings = bookingService.getUserBookings(booker.getId(), "FUTURE");
         assertThat(futureBookings).hasSize(1);
-        assertThat(futureBookings.get(0).getStatus()).isEqualTo(BookingStatus.WAITING);
+        assertThat(futureBookings.getFirst().getStatus()).isEqualTo(BookingStatus.WAITING);
 
         List<BookingDto> pastBookings = bookingService.getUserBookings(booker.getId(), "PAST");
         assertThat(pastBookings).hasSize(1);
-        assertThat(pastBookings.get(0).getStatus()).isEqualTo(BookingStatus.CANCELED);
+        assertThat(pastBookings.getFirst().getStatus()).isEqualTo(BookingStatus.CANCELED);
 
         List<BookingDto> currentBookings = bookingService.getUserBookings(booker.getId(), "CURRENT");
         assertThat(currentBookings).hasSize(1);
-        assertThat(currentBookings.get(0).getStatus()).isEqualTo(BookingStatus.APPROVED);
+        assertThat(currentBookings.getFirst().getStatus()).isEqualTo(BookingStatus.APPROVED);
 
         List<BookingDto> rejectedBookings = bookingService.getUserBookings(booker.getId(), "REJECTED");
         assertThat(rejectedBookings).hasSize(1);
-        assertThat(rejectedBookings.get(0).getStatus()).isEqualTo(BookingStatus.REJECTED);
+        assertThat(rejectedBookings.getFirst().getStatus()).isEqualTo(BookingStatus.REJECTED);
 
         List<BookingDto> allBookings = bookingService.getUserBookings(booker.getId(), "ALL");
         assertThat(allBookings).hasSize(4);
-        assertTrue(allBookings.get(0).getStart().isBefore(allBookings.get(1).getStart()) || allBookings.get(0).getStart().isEqual(allBookings.get(1).getStart()));
+        assertTrue(allBookings.getFirst().getStart().isBefore(allBookings.get(1).getStart()) || allBookings.get(0).getStart().isEqual(allBookings.get(1).getStart()));
     }
 
     @Test
-    void getUserBookings_whenUserNotFound_shouldThrowNotFound() {
+    void getUserBookingsWhenUserNotFoundShouldThrowNotFound() {
         assertThrows(NotFoundException.class, () -> bookingService.getUserBookings(999L, "ALL"));
     }
 
     @Test
-    void getUserBookings_whenInvalidState_shouldThrowBadRequest() {
+    void getUserBookingsWhenInvalidStateShouldThrowBadRequest() {
         assertThrows(BadRequestException.class, () -> bookingService.getUserBookings(booker.getId(), "INVALID"));
     }
 
 
     @Test
-    void getOwnerBookings_byState_shouldFilterAndSortCorrectly() {
+    void getOwnerBookingsByStateShouldFilterAndSortCorrectly() {
         User otherBooker = userRepository.save(new User(0L, "Other Booker", "ob@example.com"));
         entityManager.flush();
         entityManager.clear();
@@ -249,7 +249,7 @@ public class BookingServiceIntegrationTest {
 
         List<BookingDto> futureOwnerBookings = bookingService.getOwnerBookings(owner.getId(), "FUTURE");
         assertThat(futureOwnerBookings).hasSize(1);
-        assertThat(futureOwnerBookings.get(0).getStatus()).isEqualTo(BookingStatus.WAITING);
+        assertThat(futureOwnerBookings.getFirst().getStatus()).isEqualTo(BookingStatus.WAITING);
 
 
         List<BookingDto> allOwnerBookings = bookingService.getOwnerBookings(owner.getId(), "ALL");
@@ -257,7 +257,7 @@ public class BookingServiceIntegrationTest {
     }
 
     @Test
-    void getOwnerBookings_whenUserNotFound_shouldThrowNotFound() {
+    void getOwnerBookingsWhenUserNotFoundShouldThrowNotFound() {
         assertThrows(NotFoundException.class, () -> bookingService.getOwnerBookings(999L, "ALL"));
     }
 }
