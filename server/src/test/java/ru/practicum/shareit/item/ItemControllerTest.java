@@ -63,13 +63,12 @@ public class ItemControllerTest {
     private CommentDto commentDtoResult;
     private final long userId = 1L;
     private final long itemId = 1L;
-    private ItemShortDto itemShortDto;
     private User userStub;
     private Item itemStub;
 
     @BeforeEach
     void setUp() {
-        itemShortDto = new ItemShortDto(itemId, "Test Item", "Description");
+        ItemShortDto itemShortDto = new ItemShortDto(itemId, "Test Item", "Description");
         UserDto bookerUserDto = new UserDto(2L, "Booker User", "booker@example.com");
 
         BookingDto lastBooking = new BookingDto(10L, LocalDateTime.now().minusDays(2), LocalDateTime.now().minusDays(1),
@@ -114,7 +113,7 @@ public class ItemControllerTest {
     }
 
     @Test
-    void getItem_whenItemFound_shouldReturnItemDtoWithDetails() throws Exception {
+    void getItemWhenItemFoundShouldReturnItemDtoWithDetails() throws Exception {
         Item itemWithDetails = new Item(itemId, "Test Item", "Description", true, userStub, null,
                 List.of(new ru.practicum.shareit.comment.Comment(5L, "Comment for item", itemStub, new User(2L, "Comment Author", "ca@ex.com"), LocalDateTime.now().minusHours(1))),
                 List.of(
@@ -134,7 +133,7 @@ public class ItemControllerTest {
     }
 
     @Test
-    void createItem_whenDataIsValid_shouldReturnCreatedItemDto() throws Exception {
+    void createItemWhenDataIsValidShouldReturnCreatedItemDto() throws Exception {
         ItemDto requestDto = new ItemDto(null, "New Test Item", "New Description", true, userId, null, null, null, null);
 
         User owner = new User(userId, "Test User", "test@example.com");
@@ -170,7 +169,7 @@ public class ItemControllerTest {
     }
 
     @Test
-    void createComment_whenDataIsValid_shouldReturnCreatedCommentDto() throws Exception {
+    void createCommentWhenDataIsValidShouldReturnCreatedCommentDto() throws Exception {
         CommentCreateDto commentCreateDto = new CommentCreateDto("Comment text");
 
         ru.practicum.shareit.booking.Booking bookingStub = new ru.practicum.shareit.booking.Booking(
@@ -199,7 +198,7 @@ public class ItemControllerTest {
     }
 
     @Test
-    void getItem_whenItemNotFound_shouldReturnNotFound() throws Exception {
+    void getItemWhenItemNotFoundShouldReturnNotFound() throws Exception {
         when(itemRepositoryMock.findById(99L)).thenReturn(Optional.empty());
 
         mockMvc.perform(get("/items/{id}", 99L))
@@ -207,7 +206,7 @@ public class ItemControllerTest {
     }
 
     @Test
-    void updateItem_whenDataIsValid_shouldReturnUpdatedItemDto() throws Exception {
+    void updateItemWhenDataIsValidShouldReturnUpdatedItemDto() throws Exception {
         ItemUpdateDto itemUpdateDto = new ItemUpdateDto("Updated name", null, null);
         Item itemToUpdate = new Item(itemId, "Old Name", "Old Description", true, userStub, null, Collections.emptyList(), Collections.emptyList());
         when(itemRepositoryMock.findById(itemId)).thenReturn(Optional.of(itemToUpdate));
@@ -223,7 +222,7 @@ public class ItemControllerTest {
     }
 
     @Test
-    void updateItem_whenNotOwner_shouldReturnNotFound() throws Exception {
+    void updateItemWhenNotOwnerShouldReturnNotFound() throws Exception {
         ItemUpdateDto itemUpdateDto = new ItemUpdateDto("Name", null, null);
         long wrongUserId = 2L;
         when(itemRepositoryMock.findById(itemId)).thenReturn(Optional.of(itemStub));
@@ -238,7 +237,7 @@ public class ItemControllerTest {
 
 
     @Test
-    void searchItems_whenTextIsProvided_shouldReturnListOfFoundItemDto() throws Exception {
+    void searchItemsWhenTextIsProvidedShouldReturnListOfFoundItemDto() throws Exception {
         String searchText = "item";
         Item foundItemEntity = new Item(itemId, "Found item", "Description", true, userStub, null, Collections.emptyList(), Collections.emptyList());
         when(itemRepositoryMock.searchByNameOrDescriptionIgnoreCase(searchText)).thenReturn(List.of(foundItemEntity));
@@ -252,7 +251,7 @@ public class ItemControllerTest {
     }
 
     @Test
-    void searchItems_whenTextIsEmpty_shouldReturnEmptyList() throws Exception {
+    void searchItemsWhenTextIsEmptyShouldReturnEmptyList() throws Exception {
 
         mockMvc.perform(get("/items/search")
                         .param("text", ""))
@@ -262,7 +261,7 @@ public class ItemControllerTest {
 
 
     @Test
-    void createComment_whenDataIsInvalid_shouldReturnBadRequest() throws Exception {
+    void createCommentWhenDataIsInvalidShouldReturnBadRequest() throws Exception {
         CommentCreateDto commentCreateDto = new CommentCreateDto("Text");
         when(bookingRepositoryMock.findByItemIdAndBookerId(itemId, userId)).thenReturn(null);
 

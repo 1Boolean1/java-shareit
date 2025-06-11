@@ -70,7 +70,7 @@ public class BookingService {
 
     public BookingDto approveOrRejectBooking(long bookingId, long userId, boolean approved) {
         Booking booking = repository.findById(bookingId)
-                .orElseThrow(() -> new NotFoundException("Booking not found"));
+                .orElseThrow(() -> new BadRequestException("Booking not found"));
         if (booking.getItem().getOwner().getId() != userId) {
             throw new BadRequestException("You are not owner of this booking");
         }

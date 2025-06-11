@@ -1,39 +1,63 @@
+version: '3.8'
+
 services:
   gateway:
-    build: gateway
-    image: shareit-gateway
-    container_name: shareit-gateway
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    image: shareit-gateway-ci
+    container_name: shareit_gateway_ci
     ports:
       - "8080:8080"
     depends_on:
-      - server
+      server:
+        condition: service_healthy
     environment:
-      - SHAREIT_SERVER_URL=http://server:9090
+      - SHAREIT_SERVER_URL=http://shareit_server_ci:9090
+    networks:
+      - shareit_network
 
   server:
-    build: server
-    image: shareit-server
-    container_name: shareit-server
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    image: shareit-server-ci
+    container_name: shareit_server_ci
     ports:
       - "9090:9090"
-    depends_on:
-      - db
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/shareit
-      - SPRING_DATASOURCE_USERNAME=shareit
-      - SPRING_DATASOURCE_PASSWORD=shareit
+      - SPRING_PROFILES_ACTIVE=ci-h2
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9090/actuator/health || exit 1"]
+      interval: 20s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    networks:
+      - shareit_network
 
   db:
     image: postgres:16.1
-    container_name: postgres
+    container_name: shareit_postgres_ci
     ports:
       - "6541:5432"
     environment:
-      - POSTGRES_PASSWORD=shareit
-      - POSTGRES_USER=shareit
       - POSTGRES_DB=shareit
+      - POSTGRES_USER=dbuser
+      - POSTGRES_PASSWORD=12345
+    volumes:
+      - shareit_postgres_data_ci:/var/lib/postgresql/data
     healthcheck:
-      test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
+      test: ["CMD-SHELL", "pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER"]
+      interval: 10s
       timeout: 5s
-      interval: 5s
-      retries: 10
+      retries: 5
+    networks:
+      - shareit_network
+
+volumes:
+  shareit_postgres_data_ci:
+
+networks:
+  shareit_network:
+    driver: bridge
