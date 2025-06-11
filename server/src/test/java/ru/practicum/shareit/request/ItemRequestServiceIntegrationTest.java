@@ -65,7 +65,7 @@ public class ItemRequestServiceIntegrationTest {
     }
 
     @Test
-    void create_shouldCreateAndReturnItemRequestDto() {
+    void createShouldCreateAndReturnItemRequestDto() {
         ItemRequestCreateDto createDto = new ItemRequestCreateDto("Need a new laptop");
 
         ItemRequestDto resultDto = itemRequestService.create(createDto, user1.getId());
@@ -83,7 +83,7 @@ public class ItemRequestServiceIntegrationTest {
     }
 
     @Test
-    void create_whenUserNotFound_shouldThrowNotFoundException() {
+    void createWhenUserNotFoundShouldThrowNotFoundException() {
         ItemRequestCreateDto createDto = new ItemRequestCreateDto("Need something");
         long nonExistentUserId = 999L;
 
@@ -93,7 +93,7 @@ public class ItemRequestServiceIntegrationTest {
     }
 
     @Test
-    void getRequests_whenUserNotFound_shouldThrowNotFoundException() {
+    void getRequestsWhenUserNotFoundShouldThrowNotFoundException() {
         long nonExistentUserId = 999L;
 
         assertThrows(NotFoundException.class, () -> {
@@ -102,7 +102,7 @@ public class ItemRequestServiceIntegrationTest {
     }
 
     @Test
-    void getRequestsFromOtherUsers_shouldReturnRequestsFromOtherUsersOnly() {
+    void getRequestsFromOtherUsersShouldReturnRequestsFromOtherUsersOnly() {
         ItemRequest requestByUser1 = new ItemRequest(1, "User1's own request", user1, LocalDateTime.now().minusHours(3), null);
         itemRequestRepository.save(requestByUser1);
 
@@ -126,7 +126,7 @@ public class ItemRequestServiceIntegrationTest {
     }
 
     @Test
-    void getRequest_shouldReturnSpecificRequestDtoWithItems() {
+    void getRequestShouldReturnSpecificRequestDtoWithItems() {
         ItemRequest request = new ItemRequest(1, "Specific request", user1, LocalDateTime.now(), null);
         request = itemRequestRepository.save(request);
 
@@ -150,7 +150,7 @@ public class ItemRequestServiceIntegrationTest {
     }
 
     @Test
-    void getRequest_whenRequestNotFound_shouldThrowNotFoundException() {
+    void getRequestWhenRequestNotFoundShouldThrowNotFoundException() {
         long nonExistentRequestId = 999L;
         assertThrows(NotFoundException.class, () -> {
             itemRequestService.getRequest(nonExistentRequestId);

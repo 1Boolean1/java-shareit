@@ -62,7 +62,7 @@ public class ItemRequestControllerTest {
     }
 
     @Test
-    void createRequest_whenValid_shouldReturnCreatedRequest() throws Exception {
+    void createRequestWhenValidShouldReturnCreatedRequest() throws Exception {
         when(userRepository.findById(requester.getId())).thenReturn(Optional.of(requester));
         when(itemRequestRepository.save(any(ItemRequest.class))).thenAnswer(invocation -> {
             ItemRequest ir = invocation.getArgument(0);
@@ -83,7 +83,7 @@ public class ItemRequestControllerTest {
     }
 
     @Test
-    void createRequest_whenUserNotFound_shouldReturnNotFound() throws Exception {
+    void createRequestWhenUserNotFoundShouldReturnNotFound() throws Exception {
         when(userRepository.findById(99L)).thenReturn(Optional.empty());
 
         mockMvc.perform(post("/requests")
@@ -95,7 +95,7 @@ public class ItemRequestControllerTest {
 
 
     @Test
-    void getRequests_whenUserExists_shouldReturnUserRequests() throws Exception {
+    void getRequestsWhenUserExistsShouldReturnUserRequests() throws Exception {
         when(userRepository.findAll()).thenReturn(List.of(requester));
         when(itemRequestRepository.findByRequesterIdOrderByCreatedDesc(requester.getId()))
                 .thenReturn(List.of(itemRequest));
@@ -110,7 +110,7 @@ public class ItemRequestControllerTest {
     }
 
     @Test
-    void getRequests_whenUserNotFoundForIsExistsUser_shouldReturnNotFound() throws Exception {
+    void getRequestsWhenUserNotFoundForIsExistsUserShouldReturnNotFound() throws Exception {
         when(userRepository.findAll()).thenReturn(Collections.emptyList());
 
         mockMvc.perform(get("/requests")
@@ -119,10 +119,8 @@ public class ItemRequestControllerTest {
     }
 
     @Test
-    void getRequest_whenRequestExists_shouldReturnRequest() throws Exception {
+    void getRequestWhenRequestExistsShouldReturnRequest() throws Exception {
         User ownerUser = new User(5L, "Owner", "owner@mail.com");
-        User requesterForInnerItemRequest = new User(1L, "Test User", "test@example.com");
-        ItemRequest innerItemRequest = new ItemRequest(itemRequest.getId(), "Some desc", requesterForInnerItemRequest, LocalDateTime.now(), Collections.emptyList());
 
         ru.practicum.shareit.item.Item itemEntity = new ru.practicum.shareit.item.Item();
         itemEntity.setId(10L);
@@ -147,7 +145,7 @@ public class ItemRequestControllerTest {
     }
 
     @Test
-    void getRequest_whenRequestNotFound_shouldReturnNotFound() throws Exception {
+    void getRequestWhenRequestNotFoundShouldReturnNotFound() throws Exception {
         when(itemRequestRepository.findById(99L)).thenReturn(Optional.empty());
 
         mockMvc.perform(get("/requests/{id}", 99L))
