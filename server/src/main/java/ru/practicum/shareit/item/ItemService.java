@@ -145,6 +145,9 @@ public class ItemService {
         }
 
         Comment comment = new Comment();
+        if (comment.getCreationDate().isBefore(booking.getStart())) {
+            throw new BadRequestException("Booking is ending date");
+        }
         comment.setText(commentCreateDto.getText());
         comment.setAuthor(userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found with id: " + userId)));

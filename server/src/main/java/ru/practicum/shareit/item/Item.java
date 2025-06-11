@@ -28,11 +28,11 @@ public class Item {
     private String name;
 
     @Column(nullable = false)
-    @NotBlank(message = "Description can't be null")
+    @NotBlank
     private String description;
 
     @Column(name = "available", nullable = false)
-    @NotNull(message = "status can't be null")
+    @NotNull
     private Boolean available;
 
     @ManyToOne(fetch = FetchType.LAZY)

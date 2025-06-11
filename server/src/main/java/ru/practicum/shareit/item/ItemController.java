@@ -1,5 +1,6 @@
 package ru.practicum.shareit.item;
 
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.comment.CommentRepository;
@@ -33,7 +34,7 @@ public class ItemController {
     }
 
     @PostMapping
-    public ItemDto createItem(@RequestBody ItemDto itemDto,
+    public ItemDto createItem(@RequestBody @Valid ItemDto itemDto,
                               @RequestHeader("X-Sharer-User-Id") Long userId) {
         return service.createItem(itemDto, userId);
     }
