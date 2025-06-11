@@ -6,7 +6,6 @@ import ru.practicum.shareit.booking.BookingMapper;
 import ru.practicum.shareit.booking.util.BookingStatus;
 import ru.practicum.shareit.comment.CommentMapper;
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.ItemResponseDto;
 import ru.practicum.shareit.item.dto.ItemShortDto;
 import ru.practicum.shareit.request.ItemRequest;
 import ru.practicum.shareit.user.User;
@@ -56,14 +55,6 @@ public class ItemMapper {
                 item.getId(),
                 item.getName(),
                 item.getDescription()
-        );
-    }
-
-    public static ItemResponseDto mapToItemResponseDto(Item item) {
-        return new ItemResponseDto(
-                item.getId(),
-                item.getName(),
-                item.getOwner().getId()
         );
     }
 
