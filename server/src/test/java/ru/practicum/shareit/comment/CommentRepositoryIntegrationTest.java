@@ -24,10 +24,8 @@ public class CommentRepositoryIntegrationTest {
 
     private User user1;
     private Item item1;
-    private Item item2;
     private Comment comment1ForItem1;
     private Comment comment2ForItem1;
-    private Comment comment1ForItem2;
 
     @BeforeEach
     void setUp() {
@@ -40,7 +38,7 @@ public class CommentRepositoryIntegrationTest {
         item1 = new Item(0L, "Item With Comments", "Desc1", true, owner, null, List.of(), List.of());
         entityManager.persist(item1);
 
-        item2 = new Item(0L, "Another Item", "Desc2", true, owner, null, List.of(), List.of());
+        Item item2 = new Item(0L, "Another Item", "Desc2", true, owner, null, List.of(), List.of());
         entityManager.persist(item2);
 
         comment1ForItem1 = new Comment(null, "First comment for item 1", item1, user1, LocalDateTime.now().minusDays(2));
@@ -49,14 +47,14 @@ public class CommentRepositoryIntegrationTest {
         comment2ForItem1 = new Comment(null, "Second comment for item 1", item1, user1, LocalDateTime.now().minusDays(1));
         entityManager.persist(comment2ForItem1);
 
-        comment1ForItem2 = new Comment(null, "Comment for item 2", item2, user1, LocalDateTime.now());
+        Comment comment1ForItem2 = new Comment(null, "Comment for item 2", item2, user1, LocalDateTime.now());
         entityManager.persist(comment1ForItem2);
 
         entityManager.flush();
     }
 
     @Test
-    void findAllByItemId_whenCommentsExistForItem_shouldReturnCommentsForItem() {
+    void findAllByItemIdWhenCommentsExistForItemShouldReturnCommentsForItem() {
         List<Comment> foundComments = commentRepository.findAllByItemId(item1.getId());
 
         assertThat(foundComments).hasSize(2);
@@ -66,7 +64,7 @@ public class CommentRepositoryIntegrationTest {
     }
 
     @Test
-    void findAllByItemId_whenNoCommentsExistForItem_shouldReturnEmptyList() {
+    void findAllByItemIdWhenNoCommentsExistForItemShouldReturnEmptyList() {
         Item itemWithNoComments = new Item(0L, "Item With No Comments", "Desc3", true, user1, null, List.of(), List.of());
         entityManager.persist(itemWithNoComments);
         entityManager.flush();
@@ -77,7 +75,7 @@ public class CommentRepositoryIntegrationTest {
     }
 
     @Test
-    void findAllByItemId_whenItemDoesNotExist_shouldReturnEmptyList() {
+    void findAllByItemIdWhenItemDoesNotExistShouldReturnEmptyList() {
         List<Comment> foundComments = commentRepository.findAllByItemId(999L);
 
         assertThat(foundComments).isEmpty();
