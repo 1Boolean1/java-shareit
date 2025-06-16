@@ -1,7 +1,9 @@
 package ru.practicum.shareit.booking;
 
+import java.util.Arrays;
 import java.util.Map;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -13,8 +15,10 @@ import org.springframework.web.util.DefaultUriBuilderFactory;
 import ru.practicum.shareit.booking.dto.BookItemRequestDto;
 import ru.practicum.shareit.booking.dto.BookingState;
 import ru.practicum.shareit.client.BaseClient;
+import ru.practicum.shareit.exceptions.BadRequestException;
 
 @Service
+@Slf4j
 public class BookingClient extends BaseClient {
     private static final String API_PREFIX = "/bookings";
 
@@ -34,12 +38,24 @@ public class BookingClient extends BaseClient {
                 "from", from,
                 "size", size
         );
+        if (!Arrays.stream(BookingState.values()).toList().contains(state)) {
+            throw new BadRequestException("Booking state must be one of " + Arrays.toString(BookingState.values()));
+        }
         return get("?state={state}&from={from}&size={size}", userId, parameters);
     }
 
 
-    public ResponseEntity<Object> bookItem(long userId, BookItemRequestDto requestDto) {
-        return post("", userId, requestDto);
+    public ResponseEntity<Object> bookItem(long userId, BookItemRequestDto booking) {
+        if (booking.getStart() == null || booking.getEnd() == null) {
+            log.warn("Start and end should be set");
+            throw new BadRequestException("Start and end should be set");
+        }
+
+        if (booking.getStart().isAfter(booking.getEnd()) || booking.getEnd().equals(booking.getStart())) {
+            log.warn("Start should be after end");
+            throw new BadRequestException("Start date cannot be after end date");
+        }
+        return post("", userId, booking);
     }
 
     public ResponseEntity<Object> getBooking(long userId, Long bookingId) {
@@ -56,6 +72,9 @@ public class BookingClient extends BaseClient {
                 "from", from,
                 "size", size
         );
+        if (!Arrays.stream(BookingState.values()).toList().contains(state)) {
+            throw new BadRequestException("Booking state must be one of " + Arrays.toString(BookingState.values()));
+        }
         return get("/owner?state={state}&from={from}&size={size}", userId, parameters);
     }
 }

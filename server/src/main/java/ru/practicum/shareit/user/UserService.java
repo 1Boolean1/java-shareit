@@ -3,7 +3,6 @@ package ru.practicum.shareit.user;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.shareit.exceptions.BadRequestException;
 import ru.practicum.shareit.exceptions.FieldContainsException;
 import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.user.dto.UserDto;
@@ -25,10 +24,6 @@ public class UserService {
     }
 
     public UserDto updateUser(long userId, UserUpdateDto userUpdateDto) {
-        if (userUpdateDto.getName() == null && userUpdateDto.getEmail() == null) {
-            throw new BadRequestException("No fields to update provided.");
-        }
-
         User existingUser = repository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found."));
 
@@ -78,9 +73,6 @@ public class UserService {
         if (userDto.getName() == null) {
             userDto.setName(userDto.getEmail());
         }
-        if (userDto.getEmail() == null) {
-            throw new BadRequestException("Email is required.");
-        }
         if (repository.findAll().stream().anyMatch(user -> Objects.equals(user.getEmail(), userDto.getEmail()))) {
             throw new FieldContainsException("Email already exists.");
         }
@@ -88,10 +80,8 @@ public class UserService {
     }
 
     public void deleteUser(long id) {
-        if (id == 0) {
-            throw new BadRequestException("Id can't be 0");
-        } else if (!isExistsUser(id)) {
-            throw new BadRequestException("User doesn't exists");
+        if (!isExistsUser(id)) {
+            throw new NotFoundException("User doesn't exists");
         }
         repository.deleteById(id);
     }

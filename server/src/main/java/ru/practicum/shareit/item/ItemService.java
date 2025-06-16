@@ -83,10 +83,6 @@ public class ItemService {
             throw new NotFoundException("Wrong owner id");
         }
 
-        if (itemUpdateDto.getName() == null && itemUpdateDto.getDescription() == null && itemUpdateDto.getAvailable() == null) {
-            throw new BadRequestException("No fields to update provided.");
-        }
-
         Item existingItem = repository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("Item not found."));
 

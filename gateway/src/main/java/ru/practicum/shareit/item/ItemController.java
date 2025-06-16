@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.comment.dto.CommentCreateDto;
+import ru.practicum.shareit.exceptions.BadRequestException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemUpdateDto;
 
@@ -44,6 +45,9 @@ public class ItemController {
 
     @GetMapping("/search")
     public ResponseEntity<Object> searchItems(@RequestParam String text) {
+        if(text.isBlank()){
+            throw new BadRequestException("Search text cannot be blank");
+        }
         return itemClient.getSearchItems(text);
     }
 

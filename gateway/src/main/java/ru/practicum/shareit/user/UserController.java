@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.exceptions.BadRequestException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserUpdateDto;
 
@@ -35,6 +36,9 @@ public class UserController {
     @PatchMapping("/{id}")
     public ResponseEntity<Object> updateUser(@PathVariable final long id,
                                              @RequestBody UserUpdateDto userUpdateDto) {
+        if (id <= 0) {
+            throw new BadRequestException("User ID must be positive.");
+        }
         return client.updateUser(id, userUpdateDto);
     }
 

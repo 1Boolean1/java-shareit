@@ -3,7 +3,6 @@ package ru.practicum.shareit.user;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.shareit.exceptions.BadRequestException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserUpdateDto;
 
@@ -32,9 +31,6 @@ public class UserController {
     @PatchMapping("/{id}")
     public UserDto updateUser(@PathVariable final long id,
                               @RequestBody UserUpdateDto userUpdateDto) {
-        if (id <= 0) {
-            throw new BadRequestException("User ID must be positive.");
-        }
         return userService.updateUser(id, userUpdateDto);
     }
 

@@ -31,15 +31,6 @@ public class BookingService {
     }
 
     public BookingDto createBooking(BookingCreateDto booking, Long bookerId) {
-        if (booking.getStart() == null || booking.getEnd() == null) {
-            log.warn("Start and end should be set");
-            throw new BadRequestException("Start and end should be set");
-        }
-
-        if (booking.getStart().isAfter(booking.getEnd()) || booking.getEnd().equals(booking.getStart())) {
-            log.warn("Start should be after end");
-            throw new BadRequestException("Start date cannot be after end date");
-        }
 
         if (userRepository.findById(bookerId).isEmpty()) {
             log.warn("User not found");
@@ -70,7 +61,7 @@ public class BookingService {
 
     public BookingDto approveOrRejectBooking(long bookingId, long userId, boolean approved) {
         Booking booking = repository.findById(bookingId)
-                .orElseThrow(() -> new BadRequestException("Booking not found"));
+                .orElseThrow(() -> new NotFoundException("Booking not found"));
         if (booking.getItem().getOwner().getId() != userId) {
             throw new BadRequestException("You are not owner of this booking");
         }
@@ -85,7 +76,7 @@ public class BookingService {
     }
 
     @Transactional(readOnly = true)
-    public BookingDto getBooking(Long bookingId, Long userId) {
+    public BookingDto getBooking(Long bookingId, Long userId) throws BadRequestException {
         Booking booking = repository.findById(bookingId)
                 .orElseThrow(() -> new NotFoundException("Booking not found"));
         if (booking.getBooker().getId() == userId
@@ -103,28 +94,7 @@ public class BookingService {
         }
         List<Booking> bookings = repository.findByBookerId(userId);
 
-        return switch (state) {
-            case "CURRENT" -> bookings.stream()
-                    .filter(booking -> booking.getStatus().equals(BookingStatus.APPROVED))
-                    .sorted(Comparator.comparing(Booking::getStart))
-                    .map(BookingMapper::mapToBookingDto).toList();
-            case "PAST" -> bookings.stream()
-                    .filter(booking -> booking.getStatus().equals(BookingStatus.CANCELED))
-                    .sorted(Comparator.comparing(Booking::getStart))
-                    .map(BookingMapper::mapToBookingDto).toList();
-            case "FUTURE" -> bookings.stream()
-                    .filter(booking -> booking.getStatus().equals(BookingStatus.WAITING))
-                    .sorted(Comparator.comparing(Booking::getStart))
-                    .map(BookingMapper::mapToBookingDto).toList();
-            case "REJECTED" -> bookings.stream()
-                    .filter(booking -> booking.getStatus().equals(BookingStatus.REJECTED))
-                    .sorted(Comparator.comparing(Booking::getStart))
-                    .map(BookingMapper::mapToBookingDto).toList();
-            case "ALL" -> bookings.stream()
-                    .sorted(Comparator.comparing(Booking::getStart))
-                    .map(BookingMapper::mapToBookingDto).toList();
-            default -> throw new BadRequestException("Invalid state");
-        };
+        return getBookingDtos(state, bookings);
     }
 
     @Transactional(readOnly = true)
@@ -135,6 +105,10 @@ public class BookingService {
 
         List<Booking> bookings = repository.findByOwnerId(userId);
 
+        return getBookingDtos(state, bookings);
+    }
+
+    private List<BookingDto> getBookingDtos(String state, List<Booking> bookings) {
         return switch (state) {
             case "CURRENT" -> bookings.stream()
                     .filter(booking -> booking.getStatus().equals(BookingStatus.APPROVED))
@@ -155,7 +129,7 @@ public class BookingService {
             case "ALL" -> bookings.stream()
                     .sorted(Comparator.comparing(Booking::getStart))
                     .map(BookingMapper::mapToBookingDto).toList();
-            default -> throw new BadRequestException("Invalid state");
+            default -> throw new IllegalStateException("Unexpected value: " + state);
         };
     }
 }
