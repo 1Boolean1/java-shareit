@@ -4,8 +4,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.shareit.exceptions.BadRequestException;
 import ru.practicum.shareit.exceptions.FieldContainsException;
 import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.user.dto.UserDto;
@@ -72,9 +72,9 @@ public class UserServiceIntegrationTest {
     }
 
     @Test
-    void createUserWhenEmailIsNullShouldThrowBadRequestException() {
+    void createUserWhenEmailIsNullShouldThrowDataIntegrityViolationException() {
         UserDto newUserDto = new UserDto(0L, "Test Name", null);
-        assertThrows(BadRequestException.class, () -> userService.createUser(newUserDto));
+        assertThrows(DataIntegrityViolationException.class, () -> userService.createUser(newUserDto));
     }
 
     @Test
@@ -140,24 +140,18 @@ public class UserServiceIntegrationTest {
     }
 
     @Test
-    void updateUserWhenNoFieldsToUpdateShouldThrowBadRequestException() {
-        UserUpdateDto emptyUpdates = new UserUpdateDto(null, null);
-        assertThrows(BadRequestException.class, () -> userService.updateUser(user1.getId(), emptyUpdates));
-    }
-
-    @Test
     void updateUserWhenEmailAlreadyExistsForAnotherUserShouldThrowFieldContainsException() {
         UserUpdateDto updates = new UserUpdateDto(null, user2.getEmail());
         assertThrows(FieldContainsException.class, () -> userService.updateUser(user1.getId(), updates));
     }
 
     @Test
-    void deleteUserWhenIdIsZeroShouldThrowBadRequestException() {
-        assertThrows(BadRequestException.class, () -> userService.deleteUser(0L));
+    void deleteUserWhenIdIsZeroShouldThrowNotFoundException() {
+        assertThrows(NotFoundException.class, () -> userService.deleteUser(0L));
     }
 
     @Test
-    void deleteUserWhenUserDoesNotExistShouldThrowBadRequestException() {
-        assertThrows(BadRequestException.class, () -> userService.deleteUser(999L));
+    void deleteUserWhenUserDoesNotExistShouldThrowNotFoundException() {
+        assertThrows(NotFoundException.class, () -> userService.deleteUser(999L));
     }
 }

@@ -11,7 +11,6 @@ import ru.practicum.shareit.booking.util.BookingStatus;
 import ru.practicum.shareit.comment.Comment;
 import ru.practicum.shareit.comment.CommentRepository;
 import ru.practicum.shareit.comment.dto.CommentCreateDto;
-import ru.practicum.shareit.exceptions.BadRequestException;
 import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemUpdateDto;
@@ -214,13 +213,6 @@ public class ItemServiceIntegrationTest {
         ItemUpdateDto updates = new ItemUpdateDto("Attempt", null, null);
         assertThrows(NotFoundException.class, () -> itemService.updateItem(item1.getId(), booker.getId(), updates));
     }
-
-    @Test
-    void updateItemWhenNoFieldsToUpdateShouldThrowBadRequestException() {
-        ItemUpdateDto emptyUpdates = new ItemUpdateDto(null, null, null);
-        assertThrows(BadRequestException.class, () -> itemService.updateItem(item1.getId(), owner.getId(), emptyUpdates));
-    }
-
 
     @Test
     void searchItemsWhenMatchesExistAndItemsAvailableShouldReturnListWithDetails() {

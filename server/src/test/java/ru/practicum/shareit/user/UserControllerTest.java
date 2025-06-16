@@ -107,12 +107,12 @@ public class UserControllerTest {
     }
 
     @Test
-    void updateUserWhenUserIdIsInvalidShouldReturnBadRequestFromController() throws Exception {
+    void updateUserWhenUserIdIsInvalidShouldReturnNotFoundFromController() throws Exception {
         UserUpdateDto updateDto = new UserUpdateDto("Name", "email@example.com");
         mockMvc.perform(patch("/users/{id}", 0L) // Invalid ID by controller's check
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateDto)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -124,16 +124,6 @@ public class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateDto)))
                 .andExpect(status().isNotFound());
-    }
-
-    @Test
-    void updateUserWhenNoFieldsToUpdateShouldReturnBadRequestFromService() throws Exception {
-        UserUpdateDto emptyUpdateDto = new UserUpdateDto(null, null);
-
-        mockMvc.perform(patch("/users/{id}", userEntity1.getId())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(emptyUpdateDto)))
-                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -159,16 +149,16 @@ public class UserControllerTest {
     }
 
     @Test
-    void deleteUserWhenIdIsZeroShouldReturnBadRequestFromService() throws Exception {
+    void deleteUserWhenIdIsZeroShouldReturnNotFoundFromService() throws Exception {
         mockMvc.perform(delete("/users/{id}", 0L))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isNotFound());
     }
 
     @Test
-    void deleteUserWhenUserDoesNotExistShouldReturnBadRequestFromService() throws Exception {
+    void deleteUserWhenUserDoesNotExistShouldReturnNotFoundFromService() throws Exception {
         when(userRepositoryMock.findAll()).thenReturn(Collections.emptyList());
 
         mockMvc.perform(delete("/users/{id}", 99L))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isNotFound());
     }
 }

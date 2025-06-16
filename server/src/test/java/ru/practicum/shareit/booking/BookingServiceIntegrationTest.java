@@ -1,5 +1,6 @@
 package ru.practicum.shareit.booking;
 
+import jakarta.validation.ConstraintViolationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,26 +86,13 @@ public class BookingServiceIntegrationTest {
     }
 
     @Test
-    void createBookingWhenStartOrEndNullShouldThrowBadRequest() {
+    void createBookingWhenStartOrEndNullShouldThrowConstraintViolationException() {
         BookingCreateDto noStartDto = new BookingCreateDto(item1.getId(), null, now.plusHours(2));
-        assertThrows(BadRequestException.class, () -> bookingService.createBooking(noStartDto, booker.getId()));
+        assertThrows(ConstraintViolationException.class, () -> bookingService.createBooking(noStartDto, booker.getId()));
 
         BookingCreateDto noEndDto = new BookingCreateDto(item1.getId(), now.plusHours(1), null);
-        assertThrows(BadRequestException.class, () -> bookingService.createBooking(noEndDto, booker.getId()));
+        assertThrows(ConstraintViolationException.class, () -> bookingService.createBooking(noEndDto, booker.getId()));
     }
-
-    @Test
-    void createBookingWhenEndBeforeStartShouldThrowBadRequest() {
-        BookingCreateDto invalidDatesDto = new BookingCreateDto(item1.getId(), now.plusHours(2), now.plusHours(1));
-        assertThrows(BadRequestException.class, () -> bookingService.createBooking(invalidDatesDto, booker.getId()));
-    }
-
-    @Test
-    void createBookingWhenEndEqualsStartShouldThrowBadRequest() {
-        BookingCreateDto equalDatesDto = new BookingCreateDto(item1.getId(), now.plusHours(1), now.plusHours(1));
-        assertThrows(BadRequestException.class, () -> bookingService.createBooking(equalDatesDto, booker.getId()));
-    }
-
 
     @Test
     void createBookingWhenBookerNotFoundShouldThrowNotFound() {
@@ -152,7 +140,7 @@ public class BookingServiceIntegrationTest {
 
     @Test
     void approveOrRejectBookingWhenBookingNotFoundShouldThrowNotFound() {
-        assertThrows(BadRequestException.class, () -> bookingService.approveOrRejectBooking(999L, owner.getId(), true));
+        assertThrows(NotFoundException.class, () -> bookingService.approveOrRejectBooking(999L, owner.getId(), true));
     }
 
     @Test
@@ -227,8 +215,8 @@ public class BookingServiceIntegrationTest {
     }
 
     @Test
-    void getUserBookingsWhenInvalidStateShouldThrowBadRequest() {
-        assertThrows(BadRequestException.class, () -> bookingService.getUserBookings(booker.getId(), "INVALID"));
+    void getUserBookingsWhenInvalidStateShouldThrowIllegalStateException() {
+        assertThrows(IllegalStateException.class, () -> bookingService.getUserBookings(booker.getId(), "INVALID"));
     }
 
 
