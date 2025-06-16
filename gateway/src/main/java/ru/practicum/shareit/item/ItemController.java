@@ -45,7 +45,7 @@ public class ItemController {
 
     @GetMapping("/search")
     public ResponseEntity<Object> searchItems(@RequestParam String text) {
-        if(text.isBlank()){
+        if (text.isBlank()) {
             throw new BadRequestException("Search text cannot be blank");
         }
         return itemClient.getSearchItems(text);
